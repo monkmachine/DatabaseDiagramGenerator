@@ -68,3 +68,6 @@ def get_db_schema(connection_string: str) -> Dict[str, Any]:
     except Exception as e:
         print(f"An error occurred analyzing the database: {e}")
         return None
+    finally:
+        if 'engine' in locals():
+            engine.dispose()

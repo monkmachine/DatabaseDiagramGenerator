@@ -3,7 +3,7 @@
 A powerful, interactive tool to visualize database schemas. 
 It generates both a **standalone interactive HTML diagram** (React Flow based) and a **Markdown file** (Mermaid.js syntax).
 
-![Demo](media__1770715126820.png)
+![Demo](diagram_preview.png)
 
 ## Features
 
@@ -55,6 +55,24 @@ python main.py "mssql+pymssql://user:password@host/dbname"
 The tool will generate two files in the current directory:
 -   `[db_name].html`: The interactive visualizer.
 -   `[db_name].md`: A markdown file with Mermaid syntax.
+
+![Interactive Diagram](diagram_preview.png)
+
+### Key Features
+-   **Interactive Visualization**: React Flow-powered diagram with draggable nodes.
+-   **Light/Dark Mode**: Toggle themes to suit your preference.
+-   **Column Filtering**: Use the "Show Only Keys" toggle to hide non-key columns and focus on relationships.
+-   **Detailed Tooltips**: Hover over any column to see its type, primary key, and foreign key status.
+-   **Search**: Instantly find tables by name.
+
+## Development
+
+### Running Tests
+Unit tests are available for the schema analyzer. Run them using:
+
+```bash
+python -m unittest tests/test_analyzer.py
+```
 
 ## Oracle Database & SSL
 
