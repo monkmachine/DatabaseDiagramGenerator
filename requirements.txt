@@ -1,0 +1,15 @@
+sqlalchemy
+# Drivers
+# SQL Server (No external ODBC driver needed)
+pymssql
+
+# Oracle (Thin mode supported by default)
+oracledb
+
+# PostgreSQL
+psycopg2-binary
+
+# MySQL
+pymysql
+
+# SQLite is built-in to Python
