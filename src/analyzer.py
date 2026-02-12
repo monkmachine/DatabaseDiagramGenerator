@@ -53,6 +53,18 @@ def get_db_schema(connection_string: str) -> Dict[str, Any]:
             # Get foreign keys
             # inspector.get_foreign_keys returns: [{'name': '...', 'constrained_columns': ['user_id'], 'referred_schema': None, 'referred_table': 'users', 'referred_columns': ['id']}, ...]
             fks = inspector.get_foreign_keys(table_name)
+            
+            # Fallback checks (e.g. for SQL Server)
+            if not fks and '.' not in table_name:
+                try:
+                    # Try explicit 'dbo' schema
+                    fks_dbo = inspector.get_foreign_keys(table_name, schema='dbo')
+                    if fks_dbo:
+                        print(f"DEBUG: Found FKs for {table_name} by explicitly checking schema 'dbo'")
+                        fks = fks_dbo
+                except Exception:
+                    pass
+
             if not fks:
                 # Debug print for empty FKs (might be normal, but useful if user expects them)
                 # print(f"DEBUG: No FKs found for table {table_name}")
