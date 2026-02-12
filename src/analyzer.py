@@ -54,12 +54,32 @@ def get_db_schema(connection_string: str) -> Dict[str, Any]:
                 referred_cols = fk.get('referred_columns', [])
                 target_table = fk.get('referred_table')
                 
-                # Handle schema prefix if present (e.g. 'dbo.Users' -> 'Users')
-                # But only if exact match fails and stripped version exists
-                if target_table and target_table not in table_names and '.' in target_table:
-                    possible_name = target_table.split('.')[-1]
-                    if possible_name in table_names:
-                        target_table = possible_name
+                # Logic to resolve target table
+                if target_table not in table_names:
+                    # 1. Try stripping schema
+                    if target_table and '.' in target_table:
+                        possible_name = target_table.split('.')[-1]
+                        if possible_name in table_names:
+                            target_table = possible_name
+                    
+                    # 2. Try Case-Insensitive (both full and stripped)
+                    if target_table not in table_names:
+                        # Build lower-case map
+                        table_map_lower = {t.lower(): t for t in table_names}
+                        
+                        target_lower = target_table.lower() if target_table else ""
+                        
+                        if target_lower in table_map_lower:
+                            target_table = table_map_lower[target_lower]
+                        elif '.' in target_table:
+                             # Try stripping schema + case-insensitive
+                             stripped_lower = target_table.split('.')[-1].lower()
+                             if stripped_lower in table_map_lower:
+                                 target_table = table_map_lower[stripped_lower]
+                
+                # Debug if still missing
+                if target_table not in table_names:
+                    print(f"DEBUG: Could not resolve FK target '{fk.get('referred_table')}' (normalized: '{target_table}') in known tables: {list(table_names)[:5]}...")
 
                 for i in range(len(constrained_cols)):
                     table_info["foreign_keys"].append({
