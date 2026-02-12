@@ -54,6 +54,13 @@ def get_db_schema(connection_string: str) -> Dict[str, Any]:
                 referred_cols = fk.get('referred_columns', [])
                 target_table = fk.get('referred_table')
                 
+                # Handle schema prefix if present (e.g. 'dbo.Users' -> 'Users')
+                # But only if exact match fails and stripped version exists
+                if target_table and target_table not in table_names and '.' in target_table:
+                    possible_name = target_table.split('.')[-1]
+                    if possible_name in table_names:
+                        target_table = possible_name
+
                 for i in range(len(constrained_cols)):
                     table_info["foreign_keys"].append({
                         "target_table": target_table,
