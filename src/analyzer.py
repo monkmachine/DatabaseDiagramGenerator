@@ -32,14 +32,20 @@ def get_db_schema(connection_string: str) -> Dict[str, Any]:
             # Get columns
             # inspector.get_columns returns: [{'name': 'id', 'type': INTEGER(), 'nullable': False, 'default': None, 'primary_key': 1}, ...]
             columns = inspector.get_columns(table_name)
+            
+            # Explicitly fetch PKs (more robust for some dialects)
+            pk_constraint = inspector.get_pk_constraint(table_name)
+            pk_cols = set(pk_constraint.get('constrained_columns', []))
+            
             for col in columns:
                 # Stringify the type to make it JSON serializable
                 col_type = str(col['type'])
+                is_pk = col['name'] in pk_cols or bool(col.get('primary_key', False))
                 
                 table_info["columns"].append({
                     "name": col['name'],
                     "type": col_type,
-                    "pk": bool(col.get('primary_key', False)),
+                    "pk": is_pk,
                     "nullable": col.get('nullable', True),
                     "default": str(col.get('default')) if col.get('default') is not None else None
                 })
@@ -47,7 +53,13 @@ def get_db_schema(connection_string: str) -> Dict[str, Any]:
             # Get foreign keys
             # inspector.get_foreign_keys returns: [{'name': '...', 'constrained_columns': ['user_id'], 'referred_schema': None, 'referred_table': 'users', 'referred_columns': ['id']}, ...]
             fks = inspector.get_foreign_keys(table_name)
+            if not fks:
+                # Debug print for empty FKs (might be normal, but useful if user expects them)
+                # print(f"DEBUG: No FKs found for table {table_name}")
+                pass
+                
             for fk in fks:
+                print(f"DEBUG: Found FK in {table_name}: {fk}")
                 # SQLAlchemy returns lists for columns (composite keys), we'll flatten for simple edges logic
                 # Complex composite keys might create multiple edges or need better handling, but this suffices for the visualizer
                 constrained_cols = fk.get('constrained_columns', [])
